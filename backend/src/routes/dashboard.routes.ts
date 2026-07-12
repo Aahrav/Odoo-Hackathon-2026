@@ -14,4 +14,7 @@ router.get('/kpis', DashboardController.getOverview);
 // Part 2: Financial Reports (ROI & Fuel Efficiency)
 router.get('/roi', DashboardController.getFinancialReports);
 
+// Part 3: Exports
+router.get('/export', DashboardController.exportCsv);
+
 export default router;
