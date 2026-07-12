@@ -1,5 +1,6 @@
 import { pool } from '../config/db';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 const ORG_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -28,14 +29,16 @@ async function seed() {
 
     // 2. Insert Users
     console.log('Inserting Users...');
+    const defaultPassword = await bcrypt.hash('password123', 10);
     const userResult = await pool.query(`
       INSERT INTO users (organization_id, name, email, password_hash, role, status)
       VALUES 
-      ($1, 'Alex Admin', 'admin@transitops.in', 'hashed_pass_mock', 'admin', 'active'),
-      ($1, 'Raven Manager', 'manager@transitops.in', 'hashed_pass_mock', 'fleet_manager', 'active'),
-      ($1, 'John Driver', 'driver1@transitops.in', 'hashed_pass_mock', 'driver', 'active')
+      ($1, 'Alice Admin', 'admin@transitops.in', $2, 'admin', 'active'),
+      ($1, 'Marcus Manager', 'manager@transitops.in', $2, 'fleet_manager', 'active'),
+      ($1, 'David Driver', 'driver@transitops.in', $2, 'driver', 'active'),
+      ($1, 'Mike Mechanic', 'mechanic@transitops.in', $2, 'safety_officer', 'active')
       ON CONFLICT (organization_id, email) DO NOTHING
-    `, [ORG_ID]);
+    `, [ORG_ID, defaultPassword]);
 
     // 3. Insert Vehicles
     console.log('Inserting Vehicles...');
