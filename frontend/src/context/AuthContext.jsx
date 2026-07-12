@@ -35,9 +35,11 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(
     async (credentials) => {
-      const data = await authApi.login(credentials)
-      persistAuth(data.token, data.user)
-      return data.user
+      const response = await authApi.login(credentials)
+      const token = response.data.accessToken
+      const user = response.data.user
+      persistAuth(token, user)
+      return user
     },
     [persistAuth],
   )
@@ -54,8 +56,8 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const data = await authApi.getMe(token)
-        setUser(data.user)
+        const response = await authApi.getMe(token)
+        setUser(response.data)
       } catch {
         clearAuth()
       } finally {

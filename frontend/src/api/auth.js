@@ -1,4 +1,4 @@
-const API_BASE = '/api'
+const API_BASE = '/api/v1'
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
@@ -12,7 +12,7 @@ async function request(path, options = {}) {
   const data = await response.json().catch(() => ({}))
 
   if (!response.ok) {
-    throw new Error(data.error || 'Request failed')
+    throw new Error(data.error?.message || data.message || 'Request failed')
   }
 
   return data
