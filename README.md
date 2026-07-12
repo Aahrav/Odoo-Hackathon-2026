@@ -1,4 +1,4 @@
-# TransitOps — Smart Transport Operations Platform 🚚✨
+# TransitOps — Smart Transport Operations Platform
 
 > **Modern logistics and fleet management powered by Hybrid RAG AI.**
 
@@ -6,7 +6,7 @@ TransitOps is a comprehensive, full-stack fleet management platform designed to 
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
 * **Command Center Dashboard:** Real-time KPIs tracking active vehicles, fleet utilization, active trips, revenue vs expenses, and fuel efficiency via dynamic Recharts.
 * **Strict Logistics Enforcement:** Complex PostgreSQL triggers ensure that vehicles in maintenance cannot be dispatched, and driver licenses are validated before trips.
@@ -18,7 +18,7 @@ TransitOps is a comprehensive, full-stack fleet management platform designed to 
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 * **React 19 & Vite:** Fast, modern UI development.
@@ -38,7 +38,7 @@ TransitOps is a comprehensive, full-stack fleet management platform designed to 
 
 ---
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### 1. Prerequisites
 Ensure you have the following installed:
@@ -81,7 +81,7 @@ npm run dev       # Starts the frontend on port 5173
 
 ---
 
-## 🔑 Test Credentials
+## Test Credentials
 
 Use any of the following accounts to log into the application at `http://localhost:5173`.
 All accounts share the same password.
@@ -97,7 +97,7 @@ All accounts share the same password.
 
 ---
 
-## 🏗️ Architecture Flow
+## Architecture Flow
 
 1. User sends a message via the **Frontend Chat Interface**.
 2. **Node.js API Gateway** intercepts the request and queries PostgreSQL for a live summary of fleet utilization.
