@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react'
-import { apiMock } from '../api/apiMock'
+import { vehiclesApi } from '../api/vehicles'
+import { driversApi } from '../api/drivers'
+import { tripsApi } from '../api/trips'
+import { maintenanceApi } from '../api/maintenance'
+import { expensesApi } from '../api/expenses'
 import { useAuth } from '../context/AuthContext'
 import CustomSelect from '../components/CustomSelect'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -12,23 +17,50 @@ export default function DashboardPage() {
   const [trips, setTrips] = useState([])
   const [maintenance, setMaintenance] = useState([])
   const [fuelExpenses, setFuelExpenses] = useState([])
+  const [loading, setLoading] = useState(true)
 
   // Dashboard Filters
   const [typeFilter, setTypeFilter] = useState('')
   const [regionFilter, setRegionFilter] = useState('')
 
   useEffect(() => {
-    // Inject mock regions for demo if not present
-    const rawVehicles = apiMock.getVehicles()
-    const updated = rawVehicles.map((v, i) => ({
-      ...v,
-      region: i % 2 === 0 ? 'Vadodara' : 'Ahmedabad',
-    }))
-    setVehicles(updated)
-    setDrivers(apiMock.getDrivers())
-    setTrips(apiMock.getTrips())
-    setMaintenance(apiMock.getMaintenanceLogs())
-    setFuelExpenses(apiMock.getFuelExpenses())
+    const fetchDashboard = async () => {
+      setLoading(true)
+      try {
+        const [vData, dData, tData, mData, fData] = await Promise.all([
+          vehiclesApi.getVehicles(),
+          driversApi.getDrivers(),
+          tripsApi.getTrips(),
+          maintenanceApi.getMaintenanceLogs(),
+          expensesApi.getFuelLogs()
+        ])
+        
+        // Inject mock regions for demo if not present
+        const updatedVehicles = vData.map((v, i) => ({
+          ...v,
+          region: i % 2 === 0 ? 'Vadodara' : 'Ahmedabad',
+        }))
+        
+        setVehicles(updatedVehicles)
+        setDrivers(dData)
+        setTrips(tData)
+        setMaintenance(mData)
+        
+        // Format fuel to match frontend dashboard expectation (needs type='Fuel' and cost field)
+        const formattedFuel = fData.map(f => ({ 
+          ...f, 
+          type: 'Fuel', 
+          vehicleId: f.vehicle_id,
+          cost: f.total_cost || (f.liters * f.cost_per_liter) || (f.liters * f.costPerLiter) || 0 
+        }))
+        setFuelExpenses(formattedFuel)
+      } catch (err) {
+        console.error("Failed to load dashboard data", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDashboard()
   }, [])
 
   // Filter vehicles
@@ -63,14 +95,16 @@ export default function DashboardPage() {
   // Cost calculation
   const totalFuelCost = fuelExpenses
     .filter(f => f.type === 'Fuel' && filteredVehicles.some(v => v.id === f.vehicleId))
-    .reduce((sum, f) => sum + f.cost, 0)
+    .reduce((sum, f) => sum + Number(f.cost), 0)
 
   const totalMaintCost = maintenance
     .filter(m => filteredVehicles.some(v => v.id === m.vehicleId))
-    .reduce((sum, m) => sum + m.cost, 0)
+    .reduce((sum, m) => sum + Number(m.cost), 0)
 
   const types = [...new Set(vehicles.map(v => v.type))]
   const regions = [...new Set(vehicles.map(v => v.region || 'Vadodara'))]
+
+  if (loading) return <LoadingSpinner message="Loading operations overview..." />
 
   return (
     <div className="space-y-6 pb-10">
@@ -80,7 +114,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">
             Dashboard
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">
             Welcome back, {user?.name}. Here's your operations overview.
           </p>
         </div>
@@ -110,20 +144,20 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Fleet Utilization</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Fleet Utilization</p>
             <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2">{utilizationRate}%</p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-500 mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+          <p className="text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
             <span className="font-medium text-slate-700 dark:text-slate-300">{activeVehiclesCount}</span> of {totalVehiclesCount} active
           </p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Available Vehicles</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Available Vehicles</p>
             <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2">{availableVehiclesCount}</p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-500 mt-4 border-t border-slate-100 dark:border-slate-800 pt-3 flex items-center gap-1.5">
+          <p className="text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-4 border-t border-slate-100 dark:border-slate-800 pt-3 flex items-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
             <span className="font-medium text-slate-700 dark:text-slate-300">{maintenanceVehiclesCount}</span> in workshop
           </p>
@@ -131,10 +165,10 @@ export default function DashboardPage() {
 
         <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Active Trips</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Active Trips</p>
             <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2">{activeTripsCount}</p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-500 mt-4 border-t border-slate-100 dark:border-slate-800 pt-3 flex items-center gap-1.5">
+          <p className="text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-4 border-t border-slate-100 dark:border-slate-800 pt-3 flex items-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
             <span className="font-medium text-slate-700 dark:text-slate-300">{pendingTripsCount}</span> draft requests
           </p>
@@ -142,10 +176,10 @@ export default function DashboardPage() {
 
         <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Drivers On Duty</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Drivers On Duty</p>
             <p className="text-3xl font-semibold text-slate-900 dark:text-white mt-2">{driversOnDutyCount}</p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-500 mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+          <p className="text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
             Real-time synchronization
           </p>
         </div>
@@ -156,16 +190,16 @@ export default function DashboardPage() {
         <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-6 lg:col-span-2">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
             <h2 className="text-base font-semibold text-slate-800 dark:text-white tracking-tight">Operations Cost Breakdown</h2>
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">YTD 2026</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">YTD 2026</span>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">Total Fuel Cost</span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Total Fuel Cost</span>
               <span className="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">₹{totalFuelCost.toLocaleString()}</span>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">Total Maintenance</span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Total Maintenance</span>
               <span className="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">₹{totalMaintCost.toLocaleString()}</span>
             </div>
           </div>
@@ -175,7 +209,7 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-1.5">
-                  <span className="text-slate-600 dark:text-slate-400 font-medium">Fuel</span>
+                  <span className="text-slate-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 font-medium">Fuel</span>
                   <span className="text-slate-900 dark:text-white font-medium">{((totalFuelCost / (totalFuelCost + totalMaintCost || 1)) * 100).toFixed(0)}%</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -184,7 +218,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1.5">
-                  <span className="text-slate-600 dark:text-slate-400 font-medium">Maintenance</span>
+                  <span className="text-slate-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 font-medium">Maintenance</span>
                   <span className="text-slate-900 dark:text-white font-medium">{((totalMaintCost / (totalFuelCost + totalMaintCost || 1)) * 100).toFixed(0)}%</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -215,28 +249,28 @@ export default function DashboardPage() {
                         t.status === 'Dispatched' ? 'bg-blue-500' :
                         'bg-slate-400'
                       }`}>
-                        <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-slate-900"></div>
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 truncate" title={`Trip ${t.source} → ${t.destination}`}>
                         Trip <span className="font-medium text-slate-900 dark:text-white">{t.source} → {t.destination}</span>
                       </p>
                       <p className="text-sm mt-0.5">
-                        <span className="text-slate-500 dark:text-slate-400">Updated to </span>
+                        <span className="text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Updated to </span>
                         <span className={`font-medium ${
                           t.status === 'Completed' ? 'text-emerald-600 dark:text-emerald-400' :
-                          t.status === 'Dispatched' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'
+                          t.status === 'Dispatched' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500'
                         }`}>{t.status}</span>
                       </p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Just now</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Just now</p>
                     </div>
                   </div>
                 </li>
               ))}
               {filteredTrips.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">No recent activities found.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">No recent activities found.</p>
                 </div>
               )}
             </ul>
