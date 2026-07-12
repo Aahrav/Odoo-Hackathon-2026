@@ -157,7 +157,7 @@ export class TripsService {
        SET status = 'completed', 
            final_odometer_km = $1, 
            fuel_consumed_l = $2, 
-           revenue = COALESCE($3, 0),
+           revenue = COALESCE($3, 0.0),
            actual_distance_km = $4
        WHERE id = $5 RETURNING *`,
       [finalOdometerKm, fuelConsumedL || null, revenue || 0, actualDistance, id]

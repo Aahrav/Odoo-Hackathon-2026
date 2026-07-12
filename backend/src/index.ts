@@ -28,6 +28,9 @@ import authRoutes from './routes/auth.routes';
 import vehicleRoutes from './routes/vehicles.routes';
 import driverRoutes from './routes/drivers.routes';
 import tripRoutes from './routes/trips.routes';
+import maintenanceRoutes from './routes/maintenance.routes';
+import fuelRoutes from './routes/fuel.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 import { errorHandler } from './middleware/errorHandler';
 
 // Mount routes
@@ -35,6 +38,9 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/vehicles', vehicleRoutes);
 app.use('/api/v1/drivers', driverRoutes);
 app.use('/api/v1/trips', tripRoutes);
+app.use('/api/v1/maintenance', maintenanceRoutes);
+app.use('/api/v1/fuel', fuelRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // Global Error Handler (must be after routes)
 app.use(errorHandler);
