@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { driversApi } from '../api/drivers'
 import { useAuth } from '../context/AuthContext'
+import CustomSelect from '../components/CustomSelect'
 
 export default function DriverPage() {
   const { user } = useAuth()
@@ -133,17 +134,19 @@ export default function DriverPage() {
           className="bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:border-teal-500 flex-1 w-full"
         />
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:border-teal-500 w-full sm:w-48"
-        >
-          <option value="">All Statuses</option>
-          <option value="Available">Available</option>
-          <option value="On Trip">On Trip</option>
-          <option value="Off Duty">Off Duty</option>
-          <option value="Suspended">Suspended</option>
-        </select>
+        <div className="w-full sm:w-48 z-40">
+          <CustomSelect
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            placeholder="All Statuses"
+            options={[
+              { value: 'Available', label: 'Available' },
+              { value: 'On Trip', label: 'On Trip' },
+              { value: 'Off Duty', label: 'Off Duty' },
+              { value: 'Suspended', label: 'Suspended' }
+            ]}
+          />
+        </div>
 
         <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none">
           <input
@@ -242,15 +245,17 @@ export default function DriverPage() {
                     </td>
                     <td className="p-4 text-right">
                       {isFleetManagerOrAdmin && (
-                        <select
-                          value={d.status}
-                          onChange={(e) => handleStatusChange(d.id, e.target.value)}
-                          className="bg-white border border-slate-200 rounded-lg p-1.5 text-xs outline-none focus:border-teal-500"
-                        >
-                          <option value="Available">Available</option>
-                          <option value="Off Duty">Off Duty</option>
-                          <option value="Suspended">Suspended</option>
-                        </select>
+                        <div className="w-28 ml-auto z-10">
+                          <CustomSelect
+                            value={d.status}
+                            onChange={(e) => handleStatusChange(d.id, e.target.value)}
+                            options={[
+                              { value: 'Available', label: 'Available' },
+                              { value: 'Off Duty', label: 'Off Duty' },
+                              { value: 'Suspended', label: 'Suspended' }
+                            ]}
+                          />
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -297,15 +302,17 @@ export default function DriverPage() {
                 </label>
                 <label className="block">
                   <span className="text-xs font-semibold text-slate-500 uppercase">License Class</span>
-                  <select
-                    value={addForm.licenseCategory}
-                    onChange={e => setAddForm({ ...addForm, licenseCategory: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 bg-white focus:border-teal-500 outline-none"
-                  >
-                    <option value="Light Vehicle">Light Vehicle</option>
-                    <option value="Heavy Vehicle">Heavy Vehicle</option>
-                    <option value="Commercial">Commercial</option>
-                  </select>
+                  <div className="mt-1">
+                    <CustomSelect
+                      value={addForm.licenseCategory}
+                      onChange={e => setAddForm({ ...addForm, licenseCategory: e.target.value })}
+                      options={[
+                        { value: 'Light Vehicle', label: 'Light Vehicle' },
+                        { value: 'Heavy Vehicle', label: 'Heavy Vehicle' },
+                        { value: 'Commercial', label: 'Commercial' }
+                      ]}
+                    />
+                  </div>
                 </label>
               </div>
 

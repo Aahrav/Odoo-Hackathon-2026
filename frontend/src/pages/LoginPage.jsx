@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { ROLES, ROLE_DESCRIPTIONS } from '../constants/roles'
+import CustomSelect from '../components/CustomSelect'
 
 export default function LoginPage() {
   const { login, signup } = useAuth()
@@ -147,18 +148,16 @@ export default function LoginPage() {
               <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Role (RBAC)
               </span>
-              <select
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
-              >
-                {ROLES.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
+              <div className="mt-1 z-30">
+                <CustomSelect
+                  value={form.role}
+                  onChange={(e) => handleChange({ target: { name: 'role', value: e.target.value, type: 'text' } })}
+                  options={ROLES.map((role) => ({
+                    value: role,
+                    label: role
+                  }))}
+                />
+              </div>
             </label>
 
             {!isRegister && (

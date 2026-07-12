@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiMock } from '../api/apiMock'
 import { useAuth } from '../context/AuthContext'
+import CustomSelect from '../components/CustomSelect'
 
 export default function MaintenancePage() {
   const { user } = useAuth()
@@ -140,19 +141,18 @@ export default function MaintenancePage() {
             <form onSubmit={handleCreateLog} className="space-y-4">
               <label className="block">
                 <span className="text-xs font-semibold text-slate-500 uppercase">Select Vehicle</span>
-                <select
-                  required
-                  value={form.vehicleId}
-                  onChange={e => setForm({ ...form, vehicleId: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 bg-white focus:border-teal-500 outline-none"
-                >
-                  <option value="">-- Choose eligible vehicle --</option>
-                  {maintenanceEligibleVehicles.map(v => (
-                    <option key={v.id} value={v.id}>
-                      {v.name} ({v.registrationNumber}) - Status: {v.status}
-                    </option>
-                  ))}
-                </select>
+                <div className="mt-1">
+                  <CustomSelect
+                    required
+                    value={form.vehicleId}
+                    onChange={e => setForm({ ...form, vehicleId: e.target.value })}
+                    placeholder="-- Choose eligible vehicle --"
+                    options={maintenanceEligibleVehicles.map(v => ({
+                      value: v.id,
+                      label: `${v.name} (${v.registrationNumber}) - Status: ${v.status}`
+                    }))}
+                  />
+                </div>
               </label>
 
               <label className="block">

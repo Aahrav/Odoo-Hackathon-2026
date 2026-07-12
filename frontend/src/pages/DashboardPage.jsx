@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiMock } from '../api/apiMock'
 import { useAuth } from '../context/AuthContext'
+import CustomSelect from '../components/CustomSelect'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -86,22 +87,22 @@ export default function DashboardPage() {
 
         {/* Dashboard Filters */}
         <div className="flex flex-wrap gap-3 w-full sm:w-auto">
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-md text-sm outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm transition-shadow"
-          >
-            <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">All Vehicle Types</option>
-            {types.map(t => <option key={t} value={t} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{t}</option>)}
-          </select>
-          <select
-            value={regionFilter}
-            onChange={(e) => setRegionFilter(e.target.value)}
-            className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-md text-sm outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm transition-shadow"
-          >
-            <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">All Regions</option>
-            {regions.map(r => <option key={r} value={r} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{r}</option>)}
-          </select>
+          <div className="w-full sm:w-48 z-20">
+            <CustomSelect
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              placeholder="All Vehicle Types"
+              options={types.map(t => ({ label: t, value: t }))}
+            />
+          </div>
+          <div className="w-full sm:w-48 z-10">
+            <CustomSelect
+              value={regionFilter}
+              onChange={(e) => setRegionFilter(e.target.value)}
+              placeholder="All Regions"
+              options={regions.map(r => ({ label: r, value: r }))}
+            />
+          </div>
         </div>
       </div>
 

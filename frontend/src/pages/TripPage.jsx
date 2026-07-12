@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
-import { apiMock } from '../api/apiMock'
+import { tripsApi } from '../api/trips'
+import { vehiclesApi } from '../api/vehicles'
+import { driversApi } from '../api/drivers'
 import { useAuth } from '../context/AuthContext'
+import CustomSelect from '../components/CustomSelect'
 
 export default function TripPage() {
   const { user } = useAuth()
@@ -37,18 +40,27 @@ export default function TripPage() {
     loadData()
   }, [])
 
-  const loadData = () => {
-    setTrips(apiMock.getTrips())
-    setVehicles(apiMock.getVehicles())
-    setDrivers(apiMock.getDrivers())
+  const loadData = async () => {
+    try {
+      const [tripsData, vehiclesData, driversData] = await Promise.all([
+        tripsApi.getTrips(),
+        vehiclesApi.getVehicles(),
+        driversApi.getDrivers()
+      ]);
+      setTrips(tripsData);
+      setVehicles(vehiclesData);
+      setDrivers(driversData);
+    } catch (err) {
+      console.error('Failed to load data:', err);
+    }
   }
 
-  const handleCreateTrip = (e) => {
+  const handleCreateTrip = async (e) => {
     e.preventDefault()
     setError('')
     try {
-      apiMock.createTrip(tripForm)
-      loadData()
+      await tripsApi.createTrip(tripForm)
+      await loadData()
       setShowCreateModal(false)
       setTripForm({
         source: '',
@@ -59,16 +71,16 @@ export default function TripPage() {
         plannedDistance: '',
       })
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Failed to create trip')
     }
   }
 
-  const handleDispatch = (id) => {
+  const handleDispatch = async (id) => {
     try {
-      apiMock.dispatchTrip(id)
-      loadData()
+      await tripsApi.dispatchTrip(id)
+      await loadData()
     } catch (err) {
-      alert(err.message)
+      alert(err.message || 'Failed to dispatch trip')
     }
   }
 
@@ -83,28 +95,32 @@ export default function TripPage() {
     setShowCompleteModal(true)
   }
 
-  const handleCompleteSubmit = (e) => {
+  const handleCompleteSubmit = async (e) => {
     e.preventDefault()
     setError('')
     try {
-      apiMock.completeTrip(
+      await tripsApi.completeTrip(
         selectedTrip.id,
         completeForm.finalOdometer,
         completeForm.fuelLiters,
         completeForm.fuelCost
       )
-      loadData()
+      await loadData()
       setShowCompleteModal(false)
       setSelectedTrip(null)
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Failed to complete trip')
     }
   }
 
-  const handleCancel = (id) => {
+  const handleCancel = async (id) => {
     if (confirm('Are you sure you want to cancel this trip?')) {
-      apiMock.cancelTrip(id)
-      loadData()
+      try {
+        await tripsApi.cancelTrip(id)
+        await loadData()
+      } catch (err) {
+        alert(err.message || 'Failed to cancel trip')
+      }
     }
   }
 
@@ -125,8 +141,8 @@ export default function TripPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Trip Dispatcher</h1>
-          <p className="text-sm text-slate-500">Create, schedule, dispatch, and track cargo journeys.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Trip Dispatcher</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Create, schedule, dispatch, and track cargo journeys.</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -137,10 +153,10 @@ export default function TripPage() {
       </div>
 
       {/* Trips list */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               <th className="p-4">Route</th>
               <th className="p-4">Vehicle</th>
               <th className="p-4">Driver</th>
@@ -149,25 +165,25 @@ export default function TripPage() {
               <th className="p-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-sm">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
             {trips.length === 0 ? (
               <tr>
-                <td colSpan="6" className="p-8 text-center text-slate-400">
+                <td colSpan="6" className="p-8 text-center text-slate-400 dark:text-slate-500">
                   No trips dispatched or drafted yet.
                 </td>
               </tr>
             ) : (
               [...trips].reverse().map((t) => (
-                <tr key={t.id} className="hover:bg-slate-50 transition">
-                  <td className="p-4 font-semibold text-slate-900">
+                <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition">
+                  <td className="p-4 font-semibold text-slate-900 dark:text-slate-100">
                     {t.source} → {t.destination}
-                    <p className="text-[10px] font-normal text-slate-400 font-mono mt-0.5">Created: {t.dateCreated}</p>
+                    <p className="text-[10px] font-normal text-slate-400 dark:text-slate-500 font-mono mt-0.5">Created: {t.dateCreated}</p>
                   </td>
-                  <td className="p-4 text-slate-700">{getVehicleName(t.vehicleId)}</td>
-                  <td className="p-4 text-slate-700">{getDriverName(t.driverId)}</td>
+                  <td className="p-4 text-slate-700 dark:text-slate-300">{getVehicleName(t.vehicleId)}</td>
+                  <td className="p-4 text-slate-700 dark:text-slate-300">{getDriverName(t.driverId)}</td>
                   <td className="p-4">
-                    <p className="text-slate-800">{t.cargoWeight} kg</p>
-                    <p className="text-xs text-slate-400">{t.plannedDistance} km</p>
+                    <p className="text-slate-800 dark:text-slate-200">{t.cargoWeight} kg</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{t.plannedDistance} km</p>
                   </td>
                   <td className="p-4">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -225,10 +241,10 @@ export default function TripPage() {
       {/* Create Trip Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-slate-900">Create Trip Draft</h2>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600 text-lg font-semibold">×</button>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Create Trip Draft</h2>
+              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg font-semibold">×</button>
             </div>
 
             <form onSubmit={handleCreateTrip} className="space-y-4">
@@ -257,38 +273,36 @@ export default function TripPage() {
                 </label>
               </div>
 
-              <label className="block">
+              <label className="block z-40">
                 <span className="text-xs font-semibold text-slate-500 uppercase">Select Vehicle</span>
-                <select
-                  required
-                  value={tripForm.vehicleId}
-                  onChange={e => setTripForm({ ...tripForm, vehicleId: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 bg-white focus:border-teal-500 outline-none"
-                >
-                  <option value="">-- Choose available vehicle --</option>
-                  {dispatchableVehicles.map(v => (
-                    <option key={v.id} value={v.id}>
-                      {v.name} ({v.registrationNumber}) - Capacity: {v.maxLoadCapacityKg}kg
-                    </option>
-                  ))}
-                </select>
+                <div className="mt-1">
+                  <CustomSelect
+                    required
+                    value={tripForm.vehicleId}
+                    onChange={e => setTripForm({ ...tripForm, vehicleId: e.target.value })}
+                    placeholder="-- Choose available vehicle --"
+                    options={dispatchableVehicles.map(v => ({
+                      value: v.id,
+                      label: `${v.name} (${v.registrationNumber}) - Capacity: ${v.maxLoadCapacityKg}kg`
+                    }))}
+                  />
+                </div>
               </label>
 
-              <label className="block">
+              <label className="block z-30">
                 <span className="text-xs font-semibold text-slate-500 uppercase">Select Driver</span>
-                <select
-                  required
-                  value={tripForm.driverId}
-                  onChange={e => setTripForm({ ...tripForm, driverId: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 bg-white focus:border-teal-500 outline-none"
-                >
-                  <option value="">-- Choose available driver --</option>
-                  {dispatchableDrivers.map(d => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} (License Class: {d.licenseCategory})
-                    </option>
-                  ))}
-                </select>
+                <div className="mt-1">
+                  <CustomSelect
+                    required
+                    value={tripForm.driverId}
+                    onChange={e => setTripForm({ ...tripForm, driverId: e.target.value })}
+                    placeholder="-- Choose available driver --"
+                    options={dispatchableDrivers.map(d => ({
+                      value: d.id,
+                      label: `${d.name} (License Class: ${d.licenseCategory})`
+                    }))}
+                  />
+                </div>
               </label>
 
               <div className="grid grid-cols-2 gap-4">
@@ -343,13 +357,13 @@ export default function TripPage() {
       {/* Complete Trip Modal */}
       {showCompleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-slate-900">Complete Dispatched Trip</h2>
-              <button onClick={() => setShowCompleteModal(false)} className="text-slate-400 hover:text-slate-600 text-lg font-semibold">×</button>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Complete Dispatched Trip</h2>
+              <button onClick={() => setShowCompleteModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg font-semibold">×</button>
             </div>
 
-            <p className="text-xs text-slate-500">Record final vehicle mileage and fuel consumption for trip completion.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Record final vehicle mileage and fuel consumption for trip completion.</p>
 
             <form onSubmit={handleCompleteSubmit} className="space-y-4">
               <label className="block">

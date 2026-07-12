@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { apiMock } from '../api/apiMock'
 import { useAuth } from '../context/AuthContext'
+import CustomSelect from '../components/CustomSelect'
 
 export default function FuelExpensePage() {
   const { user } = useAuth()
@@ -176,31 +177,33 @@ export default function FuelExpensePage() {
             <form onSubmit={handleFuelSubmit} className="space-y-4">
               <label className="block">
                 <span className="text-xs font-semibold text-slate-500 uppercase">Select Vehicle</span>
-                <select
-                  required
-                  value={fuelForm.vehicleId}
-                  onChange={e => setFuelForm({ ...fuelForm, vehicleId: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 bg-white focus:border-teal-500 outline-none"
-                >
-                  <option value="">-- Select vehicle --</option>
-                  {vehicles.filter(v => v.status !== 'Retired').map(v => (
-                    <option key={v.id} value={v.id}>{v.name} ({v.registrationNumber})</option>
-                  ))}
-                </select>
+                <div className="mt-1 z-40">
+                  <CustomSelect
+                    required
+                    value={fuelForm.vehicleId}
+                    onChange={e => setFuelForm({ ...fuelForm, vehicleId: e.target.value })}
+                    placeholder="-- Select vehicle --"
+                    options={vehicles.filter(v => v.status !== 'Retired').map(v => ({
+                      value: v.id,
+                      label: `${v.name} (${v.registrationNumber})`
+                    }))}
+                  />
+                </div>
               </label>
 
               <label className="block">
                 <span className="text-xs font-semibold text-slate-500 uppercase">Select Trip (Optional)</span>
-                <select
-                  value={fuelForm.tripId}
-                  onChange={e => setFuelForm({ ...fuelForm, tripId: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 bg-white focus:border-teal-500 outline-none"
-                >
-                  <option value="">-- Standalone (No associated active trip) --</option>
-                  {trips.map(t => (
-                    <option key={t.id} value={t.id}>{t.source} → {t.destination} ({t.status})</option>
-                  ))}
-                </select>
+                <div className="mt-1 z-30">
+                  <CustomSelect
+                    value={fuelForm.tripId}
+                    onChange={e => setFuelForm({ ...fuelForm, tripId: e.target.value })}
+                    placeholder="-- Standalone (No associated active trip) --"
+                    options={trips.map(t => ({
+                      value: t.id,
+                      label: `${t.source} → ${t.destination} (${t.status})`
+                    }))}
+                  />
+                </div>
               </label>
 
               <div className="grid grid-cols-2 gap-4">
@@ -275,31 +278,34 @@ export default function FuelExpensePage() {
             <form onSubmit={handleExpenseSubmit} className="space-y-4">
               <label className="block">
                 <span className="text-xs font-semibold text-slate-500 uppercase">Select Vehicle</span>
-                <select
-                  required
-                  value={expenseForm.vehicleId}
-                  onChange={e => setExpenseForm({ ...expenseForm, vehicleId: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 bg-white focus:border-teal-500 outline-none"
-                >
-                  <option value="">-- Select vehicle --</option>
-                  {vehicles.filter(v => v.status !== 'Retired').map(v => (
-                    <option key={v.id} value={v.id}>{v.name} ({v.registrationNumber})</option>
-                  ))}
-                </select>
+                <div className="mt-1 z-40">
+                  <CustomSelect
+                    required
+                    value={expenseForm.vehicleId}
+                    onChange={e => setExpenseForm({ ...expenseForm, vehicleId: e.target.value })}
+                    placeholder="-- Select vehicle --"
+                    options={vehicles.filter(v => v.status !== 'Retired').map(v => ({
+                      value: v.id,
+                      label: `${v.name} (${v.registrationNumber})`
+                    }))}
+                  />
+                </div>
               </label>
 
               <div className="grid grid-cols-2 gap-4">
                 <label className="block">
                   <span className="text-xs font-semibold text-slate-500 uppercase">Expense Category</span>
-                  <select
-                    value={expenseForm.type}
-                    onChange={e => setExpenseForm({ ...expenseForm, type: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 bg-white focus:border-teal-500 outline-none"
-                  >
-                    <option value="Toll">Highway Tolls</option>
-                    <option value="Misc">Incidental / Miscellaneous</option>
-                    <option value="Parking">Parking Fee</option>
-                  </select>
+                  <div className="mt-1 z-30">
+                    <CustomSelect
+                      value={expenseForm.type}
+                      onChange={e => setExpenseForm({ ...expenseForm, type: e.target.value })}
+                      options={[
+                        { value: 'Toll', label: 'Highway Tolls' },
+                        { value: 'Misc', label: 'Incidental / Miscellaneous' },
+                        { value: 'Parking', label: 'Parking Fee' }
+                      ]}
+                    />
+                  </div>
                 </label>
                 <label className="block">
                   <span className="text-xs font-semibold text-slate-500 uppercase">Cost (₹)</span>

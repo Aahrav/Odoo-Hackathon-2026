@@ -11,7 +11,25 @@
   --font-sans: "Segoe UI", system-ui, sans-serif;
 }
 
-/* Dark mode styles */
+@layer base {
+  button, select, [role="button"], input[type="button"], input[type="submit"] {
+    cursor: pointer !important;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+    @apply dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100;
+  }
+
+  input::placeholder, textarea::placeholder {
+    @apply dark:text-slate-500;
+  }
+
+  select option {
+    @apply bg-white dark:bg-slate-900 text-slate-900 dark:text-white;
+  }
+}
+
+/* Dark mode base styles */
 .dark {
   --color-transit-surface: #0f172a;
   --color-transit-card: #1e293b;
