@@ -1,3 +1,15 @@
 transit.md
 TransitOps Smart Transport Operations Platform.pdf
 Transitops - smart transport operations platform  - 8 hours.excalidraw
+sql file
+transitops_api_design.md
+
+# Node.js
+node_modules/
+**/node_modules/
+.env
+**/.env
+dist/
+**/dist/
+coverage/
+.DS_Store
