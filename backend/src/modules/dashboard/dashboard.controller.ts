@@ -12,19 +12,11 @@ export class DashboardController {
     }
   }
 
-  static async getVehicleROI(req: AuthRequest, res: Response, next: NextFunction) {
+  static async getFinancialReports(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const data = await DashboardService.getVehicleROI(req.user.organizationId);
-      res.json({ success: true, data });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async getFuelEfficiency(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const data = await DashboardService.getFuelEfficiency(req.user.organizationId);
-      res.json({ success: true, data });
+      const roi = await DashboardService.getVehicleROI(req.user.organizationId);
+      const fuelEfficiency = await DashboardService.getFuelEfficiency(req.user.organizationId);
+      res.json({ success: true, data: { roi, fuelEfficiency } });
     } catch (error) {
       next(error);
     }

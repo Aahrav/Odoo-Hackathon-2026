@@ -40,7 +40,7 @@ app.use('/api/v1/drivers', driverRoutes);
 app.use('/api/v1/trips', tripRoutes);
 app.use('/api/v1/maintenance', maintenanceRoutes);
 app.use('/api/v1/fuel', fuelRoutes);
-app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/reports', dashboardRoutes);
 
 // Global Error Handler (must be after routes)
 app.use(errorHandler);
