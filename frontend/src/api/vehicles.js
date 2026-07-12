@@ -12,7 +12,7 @@ export const vehiclesApi = {
       maxLoadCapacityKg: v.max_load_capacity_kg,
       acquisitionCost: v.acquisition_cost,
       odometer: v.odometer_km,
-      status: v.status.charAt(0).toUpperCase() + v.status.slice(1) // available -> Available
+      status: v.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
     }));
   },
   

@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { vehiclesApi } from '../api/vehicles'
 import { useAuth } from '../context/AuthContext'
 import CustomSelect from '../components/CustomSelect'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function VehiclePage() {
   const { user } = useAuth()
   const [vehicles, setVehicles] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
@@ -43,7 +45,12 @@ export default function VehiclePage() {
   }, [])
 
   const loadVehicles = async () => {
-    setVehicles(await vehiclesApi.getVehicles())
+    setLoading(true)
+    try {
+      setVehicles(await vehiclesApi.getVehicles())
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleRegister = async (e) => {
@@ -116,7 +123,7 @@ export default function VehiclePage() {
       const matchSearch =
         v.name.toLowerCase().includes(search.toLowerCase()) ||
         v.registrationNumber.toLowerCase().includes(search.toLowerCase()) ||
-        v.model.toLowerCase().includes(search.toLowerCase())
+        (v.model || '').toLowerCase().includes(search.toLowerCase())
       const matchStatus = statusFilter ? v.status === statusFilter : true
       const matchType = typeFilter ? v.type === typeFilter : true
       return matchSearch && matchStatus && matchType
@@ -137,12 +144,14 @@ export default function VehiclePage() {
 
   const canManage = user?.role === 'Fleet Manager' || user?.role === 'Admin'
 
+  if (loading) return <LoadingSpinner message="Loading vehicle registry..." />
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Vehicle Registry</h1>
-          <p className="text-sm text-slate-500">Manage organizational transport fleet assets and configurations.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Vehicle Registry</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Manage organizational transport fleet assets and configurations.</p>
         </div>
         {canManage && (
           <button
@@ -155,13 +164,13 @@ export default function VehiclePage() {
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 items-center">
+      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 items-center">
         <input
           type="text"
           placeholder="Search registration, model..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:border-teal-500"
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl text-sm outline-none focus:border-teal-500"
         />
 
         <div className="z-40">
@@ -202,7 +211,7 @@ export default function VehiclePage() {
           </div>
           <button
             onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
-            className="bg-white border border-slate-200 p-2 rounded-xl text-sm hover:bg-slate-100"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2 rounded-xl text-sm hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             {order === 'asc' ? '▲' : '▼'}
           </button>
@@ -213,10 +222,10 @@ export default function VehiclePage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Vehicles List */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">
                   <th className="p-4">Vehicle Details</th>
                   <th className="p-4">Type & Capacity</th>
                   <th className="p-4">Odometer</th>
@@ -224,10 +233,10 @@ export default function VehiclePage() {
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                 {filteredVehicles.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="p-8 text-center text-slate-400">
+                    <td colSpan="5" className="p-8 text-center text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">
                       No vehicles found matching current criteria.
                     </td>
                   </tr>
@@ -236,26 +245,26 @@ export default function VehiclePage() {
                     <tr
                       key={v.id}
                       onClick={() => loadHistory(v)}
-                      className={`hover:bg-slate-50 cursor-pointer transition ${selectedVehicle?.id === v.id ? 'bg-teal-50/40' : ''}`}
+                      className={`hover:bg-slate-50 dark:bg-slate-800/50 cursor-pointer transition ${selectedVehicle?.id === v.id ? 'bg-teal-50/40' : ''}`}
                     >
                       <td className="p-4">
-                        <p className="font-semibold text-slate-900">{v.name}</p>
-                        <p className="text-xs font-mono text-slate-500">{v.registrationNumber}</p>
-                        <p className="text-xs text-slate-400">{v.model}</p>
+                        <p className="font-semibold text-slate-900 dark:text-white">{v.name}</p>
+                        <p className="text-xs font-mono text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">{v.registrationNumber}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">{v.model}</p>
                       </td>
                       <td className="p-4">
-                        <p className="text-slate-800 font-medium">{v.type}</p>
-                        <p className="text-xs text-slate-500">{v.maxLoadCapacityKg} kg max capacity</p>
+                        <p className="text-slate-800 dark:text-slate-200 font-medium">{v.type}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">{v.maxLoadCapacityKg} kg max capacity</p>
                       </td>
                       <td className="p-4">
-                        <p className="font-medium text-slate-700">{v.odometer.toLocaleString()} km</p>
+                        <p className="font-medium text-slate-700 dark:text-slate-300">{v.odometer.toLocaleString()} km</p>
                       </td>
                       <td className="p-4">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          v.status === 'Available' ? 'bg-green-100 text-green-800' :
-                          v.status === 'On Trip' ? 'bg-blue-100 text-blue-800' :
-                          v.status === 'In Shop' ? 'bg-amber-100 text-amber-800' :
-                          'bg-slate-100 text-slate-800'
+                          v.status === 'Available' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                          v.status === 'On Trip' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                          v.status === 'In Shop' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' :
+                          'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
                         }`}>
                           {v.status}
                         </span>
@@ -289,25 +298,25 @@ export default function VehiclePage() {
         {/* Details & History/Documents Panel */}
         <div className="space-y-4">
           {selectedVehicle ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-5 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-5 shadow-sm">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Selected Vehicle</span>
-                <h2 className="text-xl font-bold text-slate-900">{selectedVehicle.name}</h2>
-                <p className="text-sm text-slate-500 font-mono">{selectedVehicle.registrationNumber}</p>
-                <p className="text-xs text-slate-400 mt-1">Cost: ₹{selectedVehicle.acquisitionCost?.toLocaleString()}</p>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Selected Vehicle</span>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">{selectedVehicle.name}</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 font-mono">{selectedVehicle.registrationNumber}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Cost: ₹{selectedVehicle.acquisitionCost?.toLocaleString()}</p>
               </div>
 
               {/* Tab selector */}
-              <div className="flex border-b border-slate-200 text-sm">
+              <div className="flex border-b border-slate-200 dark:border-slate-800 text-sm">
                 <button
                   onClick={() => setActiveTab('history')}
-                  className={`flex-1 pb-2 font-medium text-center ${activeTab === 'history' ? 'border-b-2 border-teal-700 text-teal-700' : 'text-slate-500'}`}
+                  className={`flex-1 pb-2 font-medium text-center ${activeTab === 'history' ? 'border-b-2 border-teal-700 text-teal-700' : 'text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500'}`}
                 >
                   History
                 </button>
                 <button
                   onClick={() => setActiveTab('documents')}
-                  className={`flex-1 pb-2 font-medium text-center ${activeTab === 'documents' ? 'border-b-2 border-teal-700 text-teal-700' : 'text-slate-500'}`}
+                  className={`flex-1 pb-2 font-medium text-center ${activeTab === 'documents' ? 'border-b-2 border-teal-700 text-teal-700' : 'text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500'}`}
                 >
                   Documents ({selectedVehicle.documents?.length || 0})
                 </button>
@@ -317,18 +326,18 @@ export default function VehiclePage() {
                 <div className="space-y-4">
                   {/* Maintenance History */}
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-800 mb-2">Maintenance History ({vehicleHistory.maintenance.length})</h3>
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Maintenance History ({vehicleHistory.maintenance.length})</h3>
                     {vehicleHistory.maintenance.length === 0 ? (
-                      <p className="text-xs text-slate-400">No maintenance records logged.</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">No maintenance records logged.</p>
                     ) : (
                       <ul className="space-y-2">
                         {vehicleHistory.maintenance.map((m) => (
-                          <li key={m.id} className="p-2 bg-slate-50 rounded-lg text-xs">
+                          <li key={m.id} className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg text-xs">
                             <div className="flex justify-between font-semibold">
                               <span>{m.description}</span>
                               <span className="text-teal-700">₹{m.cost}</span>
                             </div>
-                            <p className="text-slate-500 text-[10px] mt-1">Opened: {m.openDate} {m.closeDate ? `| Closed: ${m.closeDate}` : '| In Progress'}</p>
+                            <p className="text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 text-[10px] mt-1">Opened: {m.openDate} {m.closeDate ? `| Closed: ${m.closeDate}` : '| In Progress'}</p>
                           </li>
                         ))}
                       </ul>
@@ -337,20 +346,20 @@ export default function VehiclePage() {
 
                   {/* Trips History */}
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-800 mb-2">Trip logs ({vehicleHistory.trips.length})</h3>
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Trip logs ({vehicleHistory.trips.length})</h3>
                     {vehicleHistory.trips.length === 0 ? (
-                      <p className="text-xs text-slate-400">No trips dispatched.</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">No trips dispatched.</p>
                     ) : (
                       <ul className="space-y-2">
                         {vehicleHistory.trips.map((t) => (
-                          <li key={t.id} className="p-2 bg-slate-50 rounded-lg text-xs">
+                          <li key={t.id} className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg text-xs">
                             <div className="flex justify-between font-semibold">
                               <span>{t.source} → {t.destination}</span>
                               <span className={`px-1.5 py-0.5 rounded text-[10px] ${
                                 t.status === 'Completed' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
                               }`}>{t.status}</span>
                             </div>
-                            <p className="text-slate-500 text-[10px] mt-1">Cargo: {t.cargoWeight} kg | Distance: {t.plannedDistance} km</p>
+                            <p className="text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 text-[10px] mt-1">Cargo: {t.cargoWeight} kg | Distance: {t.plannedDistance} km</p>
                           </li>
                         ))}
                       </ul>
@@ -361,18 +370,18 @@ export default function VehiclePage() {
                 <div className="space-y-4">
                   {/* Documents Management */}
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-800 mb-2">Attached Documents</h3>
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">Attached Documents</h3>
                     {(!selectedVehicle.documents || selectedVehicle.documents.length === 0) ? (
-                      <p className="text-xs text-slate-400">No uploaded/registered documents.</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">No uploaded/registered documents.</p>
                     ) : (
                       <ul className="space-y-2">
                         {selectedVehicle.documents.map((doc) => (
-                          <li key={doc.id} className="p-2.5 bg-slate-50 rounded-xl text-xs flex justify-between items-start">
+                          <li key={doc.id} className="p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs flex justify-between items-start">
                             <div>
-                              <p className="font-semibold text-slate-800">{doc.name}</p>
-                              <p className="text-[10px] text-slate-500">Category: {doc.type} | Uploaded: {doc.uploadDate}</p>
+                              <p className="font-semibold text-slate-800 dark:text-slate-200">{doc.name}</p>
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Category: {doc.type} | Uploaded: {doc.uploadDate}</p>
                               {doc.expiryDate && (
-                                <p className={`text-[10px] font-medium mt-0.5 ${new Date(doc.expiryDate) < new Date() ? 'text-red-600' : 'text-slate-600'}`}>
+                                <p className={`text-[10px] font-medium mt-0.5 ${new Date(doc.expiryDate) < new Date() ? 'text-red-600' : 'text-slate-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500'}`}>
                                   Expiry: {doc.expiryDate}
                                 </p>
                               )}
@@ -392,24 +401,24 @@ export default function VehiclePage() {
                   </div>
 
                   {canManage && (
-                    <form onSubmit={handleAddDoc} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                      <p className="text-xs font-bold text-slate-700 uppercase">Attach Document Receipt</p>
+                    <form onSubmit={handleAddDoc} className="p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Attach Document Receipt</p>
                       
                       <label className="block">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase">Doc Name</span>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Doc Name</span>
                         <input
                           type="text"
                           required
                           placeholder="e.g. National Permit Certificate"
                           value={docForm.name}
                           onChange={e => setDocForm({ ...docForm, name: e.target.value })}
-                          className="w-full border border-slate-200 rounded-lg p-1.5 text-xs mt-1 outline-none bg-white"
+                          className="w-full border border-slate-200 dark:border-slate-800 rounded-lg p-1.5 text-xs mt-1 outline-none bg-white dark:bg-slate-900"
                         />
                       </label>
 
                       <div className="grid grid-cols-2 gap-2">
                         <label className="block">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase">Category</span>
+                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Category</span>
                           <div className="mt-1">
                             <CustomSelect
                               value={docForm.type}
@@ -424,12 +433,12 @@ export default function VehiclePage() {
                           </div>
                         </label>
                         <label className="block">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase">Expiry Date</span>
+                          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Expiry Date</span>
                           <input
                             type="date"
                             value={docForm.expiryDate}
                             onChange={e => setDocForm({ ...docForm, expiryDate: e.target.value })}
-                            className="w-full border border-slate-200 rounded-lg p-1.5 text-xs mt-1 bg-white outline-none"
+                            className="w-full border border-slate-200 dark:border-slate-800 rounded-lg p-1.5 text-xs mt-1 bg-white dark:bg-slate-900 outline-none"
                           />
                         </label>
                       </div>
@@ -448,7 +457,7 @@ export default function VehiclePage() {
               )}
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200 border-dashed bg-slate-50/50 p-8 text-center text-slate-400">
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 border-dashed bg-slate-50 dark:bg-slate-800/50/50 p-8 text-center text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">
               Select a vehicle to view its operational timeline and maintenance logs.
             </div>
           )}
@@ -458,12 +467,12 @@ export default function VehiclePage() {
       {/* Registration Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-slate-900">Register New Vehicle</h2>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Register New Vehicle</h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-semibold"
+                className="text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 text-lg font-semibold"
               >
                 ×
               </button>
@@ -472,43 +481,43 @@ export default function VehiclePage() {
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">Reg Number</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Reg Number</span>
                   <input
                     type="text"
                     required
                     placeholder="e.g. GJ-06-AB-1234"
                     value={form.registrationNumber}
                     onChange={e => setForm({ ...form, registrationNumber: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                    className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">Vehicle Name</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Vehicle Name</span>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Van-05"
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                    className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                   />
                 </label>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">Model</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Model</span>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Tata Ace"
                     value={form.model}
                     onChange={e => setForm({ ...form, model: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                    className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">Vehicle Type</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Vehicle Type</span>
                   <div className="mt-1">
                     <CustomSelect
                       value={form.type}
@@ -526,36 +535,36 @@ export default function VehiclePage() {
 
               <div className="grid grid-cols-3 gap-2">
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">Capacity (kg)</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Capacity (kg)</span>
                   <input
                     type="number"
                     required
                     placeholder="500"
                     value={form.maxLoadCapacityKg}
                     onChange={e => setForm({ ...form, maxLoadCapacityKg: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                    className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">Odometer (km)</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Odometer (km)</span>
                   <input
                     type="number"
                     required
                     placeholder="0"
                     value={form.odometer}
                     onChange={e => setForm({ ...form, odometer: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                    className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">Cost (₹)</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Cost (₹)</span>
                   <input
                     type="number"
                     required
                     placeholder="650000"
                     value={form.acquisitionCost}
                     onChange={e => setForm({ ...form, acquisitionCost: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                    className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                   />
                 </label>
               </div>
@@ -568,7 +577,7 @@ export default function VehiclePage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold"
+                  className="border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold"
                 >
                   Cancel
                 </button>
