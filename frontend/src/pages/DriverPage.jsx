@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { driversApi } from '../api/drivers'
 import { useAuth } from '../context/AuthContext'
 import CustomSelect from '../components/CustomSelect'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 export default function DriverPage() {
   const { user } = useAuth()
   const [drivers, setDrivers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [expiringSoonFilter, setExpiringSoonFilter] = useState(false)
@@ -35,7 +37,12 @@ export default function DriverPage() {
   }, [])
 
   const loadDrivers = async () => {
-    setDrivers(await driversApi.getDrivers())
+    setLoading(true)
+    try {
+      setDrivers(await driversApi.getDrivers())
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleAddDriver = async (e) => {
@@ -100,12 +107,14 @@ export default function DriverPage() {
   const isSafetyOfficerOrAdmin = user?.role === 'Safety Officer' || user?.role === 'Admin'
   const isFleetManagerOrAdmin = user?.role === 'Fleet Manager' || user?.role === 'Admin'
 
+  if (loading) return <LoadingSpinner message="Loading driver profiles..." />
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Drivers & Safety Profiles</h1>
-          <p className="text-sm text-slate-500">Track driver licenses, compliance status, and safety ratings.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Drivers & Safety Profiles</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Track driver licenses, compliance status, and safety ratings.</p>
         </div>
         {isFleetManagerOrAdmin && (
           <button
@@ -125,13 +134,13 @@ export default function DriverPage() {
       )}
 
       {/* Filters */}
-      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row gap-4 items-center">
+      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-4 items-center">
         <input
           type="text"
           placeholder="Search driver name, license..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm outline-none focus:border-teal-500 flex-1 w-full"
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl text-sm outline-none focus:border-teal-500 flex-1 w-full"
         />
 
         <div className="w-full sm:w-48 z-40">
@@ -148,22 +157,22 @@ export default function DriverPage() {
           />
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={expiringSoonFilter}
             onChange={(e) => setExpiringSoonFilter(e.target.checked)}
-            className="rounded border-slate-300 text-teal-700 focus:ring-teal-500"
+            className="rounded border-slate-300 dark:border-slate-700 text-teal-700 focus:ring-teal-500"
           />
           Show Licenses Expiring Soon (30 days)
         </label>
       </div>
 
       {/* Drivers Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">
               <th className="p-4">Driver Name</th>
               <th className="p-4">License Category</th>
               <th className="p-4">Expiry Date</th>
@@ -172,10 +181,10 @@ export default function DriverPage() {
               <th className="p-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-sm">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
             {filteredDrivers.length === 0 ? (
               <tr>
-                <td colSpan="6" className="p-8 text-center text-slate-400">
+                <td colSpan="6" className="p-8 text-center text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">
                   No driver profiles found.
                 </td>
               </tr>
@@ -185,17 +194,17 @@ export default function DriverPage() {
                 const isLicenseWarning = d.licenseExpiryDate <= thirtyDaysLater && !isLicenseExpired
 
                 return (
-                  <tr key={d.id} className="hover:bg-slate-50 transition">
+                  <tr key={d.id} className="hover:bg-slate-50 dark:bg-slate-800/50 transition">
                     <td className="p-4">
-                      <p className="font-semibold text-slate-900">{d.name}</p>
-                      <p className="text-xs text-slate-500">{d.contactNumber}</p>
+                      <p className="font-semibold text-slate-900 dark:text-white">{d.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">{d.contactNumber}</p>
                     </td>
                     <td className="p-4">
-                      <p className="text-slate-800 font-medium">{d.licenseCategory}</p>
-                      <p className="text-xs font-mono text-slate-400">{d.licenseNumber}</p>
+                      <p className="text-slate-800 dark:text-slate-200 font-medium">{d.licenseCategory}</p>
+                      <p className="text-xs font-mono text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">{d.licenseNumber}</p>
                     </td>
                     <td className="p-4">
-                      <p className={`font-medium ${isLicenseExpired ? 'text-red-600 font-bold' : isLicenseWarning ? 'text-amber-600 font-semibold' : 'text-slate-700'}`}>
+                      <p className={`font-medium ${isLicenseExpired ? 'text-red-600 font-bold' : isLicenseWarning ? 'text-amber-600 font-semibold' : 'text-slate-700 dark:text-slate-300'}`}>
                         {d.licenseExpiryDate}
                         {isLicenseExpired && ' (EXPIRED)'}
                         {isLicenseWarning && ' (EXPIRING)'}
@@ -237,7 +246,7 @@ export default function DriverPage() {
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         d.status === 'Available' ? 'bg-green-100 text-green-800' :
                         d.status === 'On Trip' ? 'bg-blue-100 text-blue-800' :
-                        d.status === 'Off Duty' ? 'bg-slate-100 text-slate-700' :
+                        d.status === 'Off Duty' ? 'bg-slate-100 text-slate-700 dark:text-slate-300' :
                         'bg-red-100 text-red-800'
                       }`}>
                         {d.status}
@@ -269,39 +278,39 @@ export default function DriverPage() {
       {/* Add Driver Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-slate-900">Add Driver Profile</h2>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 text-lg font-semibold">×</button>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Add Driver Profile</h2>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 text-lg font-semibold">×</button>
             </div>
 
             <form onSubmit={handleAddDriver} className="space-y-4">
               <label className="block">
-                <span className="text-xs font-semibold text-slate-500 uppercase">Driver Name</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Driver Name</span>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Alex"
                   value={addForm.name}
                   onChange={e => setAddForm({ ...addForm, name: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                  className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                 />
               </label>
 
               <div className="grid grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">License Number</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">License Number</span>
                   <input
                     type="text"
                     required
                     placeholder="e.g. DL-12345"
                     value={addForm.licenseNumber}
                     onChange={e => setAddForm({ ...addForm, licenseNumber: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                    className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">License Class</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">License Class</span>
                   <div className="mt-1">
                     <CustomSelect
                       value={addForm.licenseCategory}
@@ -318,30 +327,30 @@ export default function DriverPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">Expiry Date</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Expiry Date</span>
                   <input
                     type="date"
                     required
                     value={addForm.licenseExpiryDate}
                     onChange={e => setAddForm({ ...addForm, licenseExpiryDate: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                    className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-500 uppercase">Contact Number</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Contact Number</span>
                   <input
                     type="text"
                     required
                     placeholder="+91 98765 43210"
                     value={addForm.contactNumber}
                     onChange={e => setAddForm({ ...addForm, contactNumber: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                    className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                   />
                 </label>
               </div>
 
               <label className="block">
-                <span className="text-xs font-semibold text-slate-500 uppercase">Initial Safety Score (0-100)</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Initial Safety Score (0-100)</span>
                 <input
                   type="number"
                   min="0"
@@ -349,7 +358,7 @@ export default function DriverPage() {
                   required
                   value={addForm.safetyScore}
                   onChange={e => setAddForm({ ...addForm, safetyScore: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                  className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                 />
               </label>
 
@@ -361,7 +370,7 @@ export default function DriverPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold"
+                  className="border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold"
                 >
                   Cancel
                 </button>
@@ -380,17 +389,17 @@ export default function DriverPage() {
       {/* Update Safety Score Modal */}
       {showScoreModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-xl border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-slate-900">Update Safety Score</h2>
-              <button onClick={() => setShowScoreModal(false)} className="text-slate-400 hover:text-slate-600 text-lg font-semibold">×</button>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Update Safety Score</h2>
+              <button onClick={() => setShowScoreModal(false)} className="text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 text-lg font-semibold">×</button>
             </div>
 
-            <p className="text-xs text-slate-500">Updating driver safety score for compliance auditing.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500">Updating driver safety score for compliance auditing.</p>
 
             <form onSubmit={handleScoreUpdate} className="space-y-4">
               <label className="block">
-                <span className="text-xs font-semibold text-slate-500 uppercase">Safety Score (0 - 100)</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 uppercase">Safety Score (0 - 100)</span>
                 <input
                   type="number"
                   min="0"
@@ -398,7 +407,7 @@ export default function DriverPage() {
                   required
                   value={scoreForm}
                   onChange={e => setScoreForm(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
+                  className="w-full border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm mt-1 focus:border-teal-500 outline-none"
                 />
               </label>
 
@@ -406,7 +415,7 @@ export default function DriverPage() {
                 <button
                   type="button"
                   onClick={() => setShowScoreModal(false)}
-                  className="border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold"
+                  className="border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-semibold"
                 >
                   Cancel
                 </button>
