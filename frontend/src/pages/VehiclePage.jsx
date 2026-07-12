@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { apiMock } from '../api/apiMock'
+import { vehiclesApi } from '../api/vehicles'
 import { useAuth } from '../context/AuthContext'
 
 export default function VehiclePage() {
@@ -41,16 +41,16 @@ export default function VehiclePage() {
     loadVehicles()
   }, [])
 
-  const loadVehicles = () => {
-    setVehicles(apiMock.getVehicles())
+  const loadVehicles = async () => {
+    setVehicles(await vehiclesApi.getVehicles())
   }
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault()
     setError('')
     try {
-      apiMock.addVehicle(form)
-      loadVehicles()
+      await vehiclesApi.addVehicle(form)
+      await loadVehicles()
       setShowModal(false)
       setForm({
         registrationNumber: '',
@@ -66,12 +66,12 @@ export default function VehiclePage() {
     }
   }
 
-  const handleRetire = (id) => {
+  const handleRetire = async (id) => {
     if (confirm('Are you sure you want to retire this vehicle?')) {
-      apiMock.retireVehicle(id)
-      loadVehicles()
+      await vehiclesApi.retireVehicle(id)
+      await loadVehicles()
       if (selectedVehicle?.id === id) {
-        const found = apiMock.getVehicles().find(v => v.id === id)
+        const found = (await vehiclesApi.getVehicles()).find(v => v.id === id)
         loadHistory(found)
       }
     }
@@ -79,33 +79,33 @@ export default function VehiclePage() {
 
   const loadHistory = (vehicle) => {
     setSelectedVehicle(vehicle)
-    const allTrips = apiMock.getTrips().filter(t => t.vehicleId === vehicle.id)
-    const allMaintenance = apiMock.getMaintenanceLogs().filter(m => m.vehicleId === vehicle.id)
-    const allFuel = apiMock.getFuelExpenses().filter(f => f.vehicleId === vehicle.id)
+    const allTrips = vehiclesApi.getTrips().filter(t => t.vehicleId === vehicle.id)
+    const allMaintenance = vehiclesApi.getMaintenanceLogs().filter(m => m.vehicleId === vehicle.id)
+    const allFuel = vehiclesApi.getFuelExpenses().filter(f => f.vehicleId === vehicle.id)
     setVehicleHistory({ trips: allTrips, maintenance: allMaintenance, fuel: allFuel })
   }
 
-  const handleAddDoc = (e) => {
+  const handleAddDoc = async (e) => {
     e.preventDefault()
     setDocError('')
     if (!docForm.name.trim()) {
       setDocError('Document name is required')
       return
     }
-    apiMock.addVehicleDocument(selectedVehicle.id, docForm)
+    vehiclesApi.addVehicleDocument(selectedVehicle.id, docForm)
     // Reload vehicle to get updated docs list
-    const updated = apiMock.getVehicles().find(v => v.id === selectedVehicle.id)
+    const updated = (await vehiclesApi.getVehicles()).find(v => v.id === selectedVehicle.id)
     setSelectedVehicle(updated)
     setDocForm({ name: '', type: 'Insurance', expiryDate: '' })
-    loadVehicles()
+    await loadVehicles()
   }
 
-  const handleDeleteDoc = (docId) => {
+  const handleDeleteDoc = async (docId) => {
     if (confirm('Are you sure you want to delete this document?')) {
-      apiMock.deleteVehicleDocument(selectedVehicle.id, docId)
-      const updated = apiMock.getVehicles().find(v => v.id === selectedVehicle.id)
+      vehiclesApi.deleteVehicleDocument(selectedVehicle.id, docId)
+      const updated = (await vehiclesApi.getVehicles()).find(v => v.id === selectedVehicle.id)
       setSelectedVehicle(updated)
-      loadVehicles()
+      await loadVehicles()
     }
   }
 

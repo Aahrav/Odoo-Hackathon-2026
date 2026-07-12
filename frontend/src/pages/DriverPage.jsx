@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { apiMock } from '../api/apiMock'
+import { driversApi } from '../api/drivers'
 import { useAuth } from '../context/AuthContext'
 
 export default function DriverPage() {
@@ -33,16 +33,16 @@ export default function DriverPage() {
     loadDrivers()
   }, [])
 
-  const loadDrivers = () => {
-    setDrivers(apiMock.getDrivers())
+  const loadDrivers = async () => {
+    setDrivers(await driversApi.getDrivers())
   }
 
-  const handleAddDriver = (e) => {
+  const handleAddDriver = async (e) => {
     e.preventDefault()
     setError('')
     try {
-      apiMock.addDriver(addForm)
-      loadDrivers()
+      await driversApi.addDriver(addForm)
+      await loadDrivers()
       setShowAddModal(false)
       setAddForm({
         name: '',
@@ -57,19 +57,19 @@ export default function DriverPage() {
     }
   }
 
-  const handleScoreUpdate = (e) => {
+  const handleScoreUpdate = async (e) => {
     e.preventDefault()
     if (!selectedDriver) return
-    apiMock.updateSafetyScore(selectedDriver.id, scoreForm)
-    loadDrivers()
+    await driversApi.updateSafetyScore(selectedDriver.id, scoreForm)
+    await loadDrivers()
     setShowScoreModal(false)
     setSelectedDriver(null)
     setScoreForm('')
   }
 
-  const handleStatusChange = (id, newStatus) => {
-    apiMock.updateDriverStatus(id, newStatus)
-    loadDrivers()
+  const handleStatusChange = async (id, newStatus) => {
+    await driversApi.updateDriverStatus(id, newStatus)
+    await loadDrivers()
   }
 
   const handleSendReminder = (driver) => {
