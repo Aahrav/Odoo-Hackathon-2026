@@ -1,8 +1,10 @@
 import os
+import json
 import requests
+import redis
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from dotenv import load_dotenv
 
 # Load the API key from the Node backend .env file
@@ -14,9 +16,18 @@ from prompts import SYSTEM_PROMPT
 app = FastAPI(title="TransitOps AI Service")
 retriever = HybridRetriever()
 
+# Connect to Redis for conversational memory
+try:
+    redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+    redis_client.ping()
+except Exception as e:
+    print(f"Warning: Redis not connected. Chat history will not be saved. {e}")
+    redis_client = None
+
 class ChatRequest(BaseModel):
     message: str
     live_context: Dict[str, Any]
+    session_id: Optional[str] = None
 
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
@@ -33,7 +44,23 @@ async def chat_endpoint(req: ChatRequest):
         live_context=req.live_context
     )
 
-    # 3. Call OpenRouter
+    # 3. Handle Chat History (Redis)
+    history = []
+    redis_key = f"chat_history:{req.session_id}" if req.session_id else None
+    
+    if redis_client and redis_key:
+        try:
+            raw_history = redis_client.lrange(redis_key, 0, -1)
+            for item in raw_history:
+                history.append(json.loads(item))
+        except Exception as e:
+            print(f"Redis fetch error: {e}")
+
+    messages = [{"role": "system", "content": prompt}]
+    messages.extend(history)
+    messages.append({"role": "user", "content": req.message})
+
+    # 4. Call OpenRouter
     llm_model = os.environ.get("LLM_MODEL_NAME", "openai/gpt-4o")
     try:
         response = requests.post(
@@ -46,15 +73,22 @@ async def chat_endpoint(req: ChatRequest):
             },
             json={
                 "model": llm_model, 
-                "messages": [
-                    {"role": "system", "content": prompt},
-                    {"role": "user", "content": req.message}
-                ]
+                "messages": messages
             }
         )
         response.raise_for_status()
         data = response.json()
         reply = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        
+        # 5. Save Context to Redis
+        if redis_client and redis_key:
+            try:
+                redis_client.rpush(redis_key, json.dumps({"role": "user", "content": req.message}))
+                redis_client.rpush(redis_key, json.dumps({"role": "assistant", "content": reply}))
+                redis_client.expire(redis_key, 3600) # Expire after 1 hour
+            except Exception as e:
+                print(f"Redis save error: {e}")
+
         return {"success": True, "data": {"reply": reply}}
         
     except Exception as e:
