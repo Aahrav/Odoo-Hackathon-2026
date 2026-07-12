@@ -43,8 +43,8 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-transit-surface transition-colors duration-200">
-      <header className="border-b border-transit-border bg-white transition-colors duration-200">
+    <div className="min-h-screen bg-transit-surface dark:bg-slate-950 transition-colors duration-200">
+      <header className="border-b border-transit-border dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-200">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div>
             <p className="text-lg font-bold text-teal-850 dark:text-teal-400">TransitOps</p>
@@ -88,7 +88,7 @@ export default function AppLayout() {
       </header>
 
       <div className="mx-auto grid max-w-7xl gap-6 px-6 py-6 lg:grid-cols-[240px_1fr]">
-        <aside className="rounded-2xl border border-transit-border bg-white p-4 transition-colors duration-200">
+        <aside className="rounded-2xl border border-transit-border dark:border-slate-800 bg-white dark:bg-slate-900 p-4 transition-colors duration-200">
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
             Navigation
           </p>
@@ -112,7 +112,7 @@ export default function AppLayout() {
           </nav>
         </aside>
 
-        <main className="rounded-2xl border border-transit-border bg-white p-6 transition-colors duration-200">
+        <main className="rounded-2xl border border-transit-border dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-colors duration-200">
           <Outlet />
         </main>
       </div>

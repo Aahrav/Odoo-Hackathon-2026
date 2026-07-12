@@ -73,15 +73,18 @@ export const authApi = {
         password: credentials.password
       })
     });
+    
+    const payload = res.data || res;
+    
     return {
-      token: res.data.accessToken,
-      user: hydrateUser(res.data.user)
+      token: payload.accessToken,
+      user: hydrateUser(payload.user)
     };
   },
 
   async signup(name, email, password, roleLabel) {
     const dbRole = ROLE_MAP[roleLabel] || 'fleet_manager';
-    const res = await fetchApi('/auth/signup', {
+    await fetchApi('/auth/signup', {
       method: 'POST',
       body: JSON.stringify({
         name,
@@ -91,18 +94,18 @@ export const authApi = {
         organizationId: '00000000-0000-0000-0000-000000000001' // default demo org
       })
     });
-    return {
-      token: res.data.accessToken,
-      user: hydrateUser(res.data.user)
-    };
+    
+    // Automatically log in after successful signup to get the token
+    return this.login({ email, password });
   },
 
   async getMe(token) {
     const res = await fetchApi('/auth/me', {
       method: 'GET'
     });
+    const payload = res.data || res;
     return {
-      user: hydrateUser(res.data)
+      user: hydrateUser(payload)
     };
   },
 
