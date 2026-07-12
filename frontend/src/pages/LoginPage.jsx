@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { ROLES, ROLE_DESCRIPTIONS } from '../constants/roles'
+import CustomSelect from '../components/CustomSelect'
 
 export default function LoginPage() {
   const { login, signup } = useAuth()
   const [isRegister, setIsRegister] = useState(false)
   const [form, setForm] = useState({
     name: '',
-    email: 'Raven.k@transitops.in',
+    email: '',
     password: '',
     role: 'Fleet Manager',
     remember: true,
@@ -15,6 +16,11 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Fix dark mode bleeding from dashboard
+  useEffect(() => {
+    document.documentElement.classList.remove('dark')
+  }, [])
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target
@@ -143,23 +149,23 @@ export default function LoginPage() {
               />
             </label>
 
-            <label className="block">
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Role (RBAC)
-              </span>
-              <select
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
-              >
-                {ROLES.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
-            </label>
+            {isRegister && (
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Role (RBAC)
+                </span>
+                <div className="mt-1 z-30">
+                  <CustomSelect
+                    value={form.role}
+                    onChange={(e) => handleChange({ target: { name: 'role', value: e.target.value, type: 'text' } })}
+                    options={ROLES.map((role) => ({
+                      value: role,
+                      label: role
+                    }))}
+                  />
+                </div>
+              </label>
+            )}
 
             {!isRegister && (
               <div className="flex items-center justify-between text-sm">
@@ -229,14 +235,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {!isRegister && (
-            <div className="mt-6 rounded-xl bg-slate-50 p-4 text-xs text-slate-500">
-              <p className="font-semibold text-slate-700">Demo credentials</p>
-              <p className="mt-2">Raven.k@transitops.in / TransitOps@2026 (Fleet Manager)</p>
-              <p>driver@transitops.in / password123 (Driver)</p>
-              <p>safety@transitops.in / safetypassword (Safety Officer)</p>
-            </div>
-          )}
         </section>
       </div>
     </div>

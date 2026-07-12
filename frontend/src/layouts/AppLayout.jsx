@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { apiMock } from '../api/apiMock'
+import TransitBot from '../components/TransitBot'
 
 export default function AppLayout() {
   const { user, logout } = useAuth()
@@ -43,8 +44,8 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-transit-surface transition-colors duration-200">
-      <header className="border-b border-transit-border bg-white transition-colors duration-200">
+    <div className="min-h-screen bg-transit-surface dark:bg-slate-950 transition-colors duration-200">
+      <header className="border-b border-transit-border dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-200">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div>
             <p className="text-lg font-bold text-teal-850 dark:text-teal-400">TransitOps</p>
@@ -54,7 +55,7 @@ export default function AppLayout() {
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl border border-transit-border text-slate-700 hover:bg-slate-50 dark:text-slate-200"
+              className="p-2 rounded-xl border border-transit-border text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition"
               title="Toggle Theme"
             >
               {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
@@ -73,13 +74,13 @@ export default function AppLayout() {
             )}
 
             <div className="text-right">
-              <p className="text-sm font-medium text-slate-900">{user?.name}</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{user?.name}</p>
               <p className="text-xs text-teal-700 dark:text-teal-400">{user?.role}</p>
             </div>
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-lg border border-transit-border px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200"
+              className="rounded-lg border border-transit-border px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 dark:border-slate-700 transition"
             >
               Sign out
             </button>
@@ -88,7 +89,7 @@ export default function AppLayout() {
       </header>
 
       <div className="mx-auto grid max-w-7xl gap-6 px-6 py-6 lg:grid-cols-[240px_1fr]">
-        <aside className="rounded-2xl border border-transit-border bg-white p-4 transition-colors duration-200">
+        <aside className="rounded-2xl border border-transit-border dark:border-slate-800 bg-white dark:bg-slate-900 p-4 transition-colors duration-200">
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
             Navigation
           </p>
@@ -102,7 +103,7 @@ export default function AppLayout() {
                     'block rounded-lg px-3 py-2 text-sm transition',
                     isActive
                       ? 'bg-teal-50 dark:bg-teal-900/20 font-semibold text-teal-800 dark:text-teal-400'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300',
+                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/50 dark:hover:text-slate-100',
                   ].join(' ')
                 }
               >
@@ -112,10 +113,13 @@ export default function AppLayout() {
           </nav>
         </aside>
 
-        <main className="rounded-2xl border border-transit-border bg-white p-6 transition-colors duration-200">
+        <main className="rounded-2xl border border-transit-border dark:border-slate-800 bg-white dark:bg-slate-900 p-6 transition-colors duration-200">
           <Outlet />
         </main>
       </div>
+      
+      {/* Global AI Assistant */}
+      <TransitBot />
     </div>
   )
 }
