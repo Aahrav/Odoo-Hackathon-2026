@@ -1,11 +1,25 @@
 import { Response, NextFunction } from 'express';
 import { TripsService } from './trips.service';
 import { AuthRequest } from '../../middleware/auth';
+import { pool } from '../../config/db';
 
 export class TripsController {
   static async getAll(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const trips = await TripsService.getAll(req.query);
+      const filters = { ...req.query };
+
+      // If the user is a driver, restrict trips to only their own trips
+      if (req.user.role === 'driver') {
+        const driverRes = await pool.query('SELECT id FROM drivers WHERE user_id = $1', [req.user.id]);
+        if (driverRes.rows.length > 0) {
+          filters.driverId = driverRes.rows[0].id;
+        } else {
+          // If they don't have a driver profile linked yet, show 0 trips
+          filters.driverId = '00000000-0000-0000-0000-000000000000'; 
+        }
+      }
+
+      const trips = await TripsService.getAll(filters);
       res.json({ success: true, data: trips });
     } catch (error) {
       next(error);
