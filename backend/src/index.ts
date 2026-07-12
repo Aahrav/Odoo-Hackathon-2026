@@ -28,16 +28,32 @@ import authRoutes from './routes/auth.routes';
 import vehicleRoutes from './routes/vehicles.routes';
 import driverRoutes from './routes/drivers.routes';
 import tripRoutes from './routes/trips.routes';
+import maintenanceRoutes from './routes/maintenance.routes';
+import fuelRoutes from './routes/fuel.routes';
+import expensesRoutes from './routes/expenses.routes';
+import dashboardRoutes from './routes/dashboard.routes';
+import notificationsRoutes from './routes/notifications.routes';
+import auditLogsRoutes from './routes/audit-logs.routes';
 import { errorHandler } from './middleware/errorHandler';
+import { startExpiryScanner } from './jobs/expiryScanner';
 
 // Mount routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/vehicles', vehicleRoutes);
 app.use('/api/v1/drivers', driverRoutes);
 app.use('/api/v1/trips', tripRoutes);
+app.use('/api/v1/maintenance', maintenanceRoutes);
+app.use('/api/v1/fuel', fuelRoutes);
+app.use('/api/v1/expenses', expensesRoutes);
+app.use('/api/v1/reports', dashboardRoutes);
+app.use('/api/v1/notifications', notificationsRoutes);
+app.use('/api/v1/audit-logs', auditLogsRoutes);
 
 // Global Error Handler (must be after routes)
 app.use(errorHandler);
+
+// Start Cron Jobs
+startExpiryScanner();
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

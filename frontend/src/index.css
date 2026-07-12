@@ -11,6 +11,15 @@
   --font-sans: "Segoe UI", system-ui, sans-serif;
 }
 
+/* Dark mode styles */
+.dark {
+  --color-transit-surface: #0f172a;
+  --color-transit-card: #1e293b;
+  --color-transit-muted: #94a3b8;
+  --color-transit-border: #334155;
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -21,8 +30,67 @@ body {
   font-family: var(--font-sans);
   background: var(--color-transit-surface);
   color: #0f172a;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dark body {
+  color: #f1f5f9;
 }
 
 #root {
   min-height: 100vh;
+}
+
+/* Utility dark mode styling overrides for basic tailwind elements */
+.dark .bg-white {
+  background-color: var(--color-transit-card) !important;
+}
+.dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 {
+  color: #f1f5f9 !important;
+}
+.dark .text-slate-600, .dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+.dark .border-slate-200, .dark .border-slate-100, .dark .border-transit-border {
+  border-color: var(--color-transit-border) !important;
+}
+.dark .bg-slate-50, .dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+.dark .bg-slate-50\/50 {
+  background-color: #0f172a !important;
+}
+.dark .hover\:bg-slate-50:hover {
+  background-color: #334155 !important;
+}
+.dark input, .dark select, .dark textarea {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #64748b !important;
+}
+.dark .shadow-sm {
+  shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Styling for print mode (PDF export) */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  header, aside, button, select, input {
+    display: none !important;
+  }
+  main {
+    width: 100% !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+  .dark main {
+    background-color: white !important;
+    color: black !important;
+  }
 }

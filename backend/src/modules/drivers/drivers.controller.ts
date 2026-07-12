@@ -41,7 +41,7 @@ export class DriversController {
 
   static async updateSafetyScore(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const driver = await DriversService.updateSafetyScore(req.params.id, req.body.safetyScore);
+      const driver = await DriversService.updateSafetyScore(req.params.id, req.body.safetyScore, req.user.id, req.user.organizationId);
       res.json({ success: true, data: driver, message: 'Safety score updated successfully' });
     } catch (error) {
       next(error);

@@ -44,6 +44,15 @@ export function AuthProvider({ children }) {
     [persistAuth],
   )
 
+  const signup = useCallback(
+    async (name, email, password, role) => {
+      const data = await authApi.signup(name, email, password, role)
+      persistAuth(data.token, data.user)
+      return data.user
+    },
+    [persistAuth],
+  )
+
   const logout = useCallback(() => {
     clearAuth()
   }, [clearAuth])
@@ -75,9 +84,10 @@ export function AuthProvider({ children }) {
       loading,
       isAuthenticated: Boolean(token && user),
       login,
+      signup,
       logout,
     }),
-    [token, user, loading, login, logout],
+    [token, user, loading, login, signup, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -87,7 +87,8 @@ export class DriversService {
     return result.rows[0];
   }
 
-  static async updateSafetyScore(id: string, safetyScore: number) {
+  static async updateSafetyScore(id: string, safetyScore: number, userId: string, organizationId: string) {
+    const oldDriver = await this.getById(id);
     const result = await pool.query(
       `UPDATE drivers SET safety_score = $1 WHERE id = $2 RETURNING *`,
       [safetyScore, id]
@@ -95,6 +96,21 @@ export class DriversService {
     if (result.rows.length === 0) {
       throw { statusCode: 404, code: 'NOT_FOUND', message: 'Driver not found' };
     }
+    
+    await pool.query(
+      `INSERT INTO audit_logs (organization_id, user_id, action, entity_type, entity_id, old_value, new_value)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        organizationId,
+        userId,
+        'driver.safety_score_updated',
+        'driver',
+        id,
+        JSON.stringify({ safety_score: oldDriver.safety_score }),
+        JSON.stringify({ safety_score: safetyScore })
+      ]
+    );
+    
     return result.rows[0];
   }
 }
