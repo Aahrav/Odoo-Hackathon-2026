@@ -17,7 +17,8 @@ export default function TripPage() {
   // UI state
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
-  const [selectedTrip, setSelectedTrip] = useState(null)
+  const [selectedTrip, setSelectedTrip] = useState(null) // For complete action
+  const [selectedViewTrip, setSelectedViewTrip] = useState(null) // For lifecycle view
   
   // Create Form State
   const [tripForm, setTripForm] = useState({
@@ -159,6 +160,76 @@ export default function TripPage() {
         </button>
       </div>
 
+      {/* Trip Lifecycle Diagram */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col shadow-sm">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-6">
+          Trip Lifecycle {selectedViewTrip ? `- Trip to ${selectedViewTrip.destination}` : '(Select a trip from the board)'}
+        </h3>
+        <div className="flex items-center w-full max-w-2xl px-4 opacity-100 transition-opacity">
+          
+          {/* Draft Node */}
+          <div className="flex flex-col items-center relative">
+            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center z-10 transition-colors ${
+              selectedViewTrip ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-500' : 'bg-slate-100 dark:bg-slate-800 border-slate-400 dark:border-slate-600'
+            }`}>
+              <div className={`w-2.5 h-2.5 rounded-full ${selectedViewTrip ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-500'}`}></div>
+            </div>
+            <span className={`text-xs font-medium mt-2 absolute -bottom-6 ${selectedViewTrip ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}`}>Draft</span>
+          </div>
+          
+          <div className={`flex-1 h-0.5 mx-2 transition-colors ${
+            selectedViewTrip && ['Dispatched', 'Completed'].includes(selectedViewTrip.status) 
+              ? 'bg-emerald-500' 
+              : selectedViewTrip?.status === 'Cancelled' ? 'bg-red-500' : 'bg-slate-200 dark:bg-slate-700'
+          }`}></div>
+          
+          {/* Dispatched Node */}
+          <div className="flex flex-col items-center relative">
+            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center z-10 transition-colors ${
+              selectedViewTrip && ['Dispatched', 'Completed'].includes(selectedViewTrip.status)
+                ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-500' 
+                : 'bg-slate-100 dark:bg-slate-800 border-slate-400 dark:border-slate-600'
+            }`}>
+              <div className={`w-2.5 h-2.5 rounded-full ${
+                selectedViewTrip && ['Dispatched', 'Completed'].includes(selectedViewTrip.status) ? 'bg-blue-500' : 'bg-slate-400 dark:bg-slate-500'
+              }`}></div>
+            </div>
+            <span className={`text-xs font-medium mt-2 absolute -bottom-6 ${
+              selectedViewTrip && ['Dispatched', 'Completed'].includes(selectedViewTrip.status) ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'
+            }`}>Dispatched</span>
+          </div>
+          
+          <div className={`flex-1 h-0.5 mx-2 transition-colors ${
+            selectedViewTrip?.status === 'Completed' ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-700'
+          }`}></div>
+          
+          {/* Completed Node */}
+          {selectedViewTrip?.status !== 'Cancelled' ? (
+            <div className="flex flex-col items-center relative">
+              <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center z-10 transition-colors ${
+                selectedViewTrip?.status === 'Completed'
+                  ? 'bg-slate-100 dark:bg-slate-800 border-slate-500 dark:border-slate-400' 
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+              }`}>
+                <div className={`w-2.5 h-2.5 rounded-full ${selectedViewTrip?.status === 'Completed' ? 'bg-slate-500 dark:bg-slate-400' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
+              </div>
+              <span className={`text-xs font-medium mt-2 absolute -bottom-6 ${
+                selectedViewTrip?.status === 'Completed' ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400'
+              }`}>Completed</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center relative">
+              <div className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/10 border-2 border-red-500 flex items-center justify-center z-10">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+              </div>
+              <span className="text-xs font-medium text-red-600 dark:text-red-400 mt-2 absolute -bottom-6">Cancelled</span>
+            </div>
+          )}
+          
+        </div>
+        <div className="h-6"></div>
+      </div>
+
       {/* Trips list */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
         <table className="w-full text-left border-collapse">
@@ -181,7 +252,15 @@ export default function TripPage() {
               </tr>
             ) : (
               [...trips].reverse().map((t) => (
-                <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition">
+                <tr 
+                  key={t.id} 
+                  onClick={() => setSelectedViewTrip(t)}
+                  className={`cursor-pointer transition ${
+                    selectedViewTrip?.id === t.id 
+                      ? 'bg-teal-50/50 dark:bg-teal-900/10 border-l-2 border-teal-500' 
+                      : 'hover:bg-slate-50 dark:hover:bg-slate-800/30 border-l-2 border-transparent'
+                  }`}
+                >
                   <td className="p-4 font-semibold text-slate-900 dark:text-slate-100">
                     {t.source} → {t.destination}
                     <p className="text-[10px] font-normal text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 dark:text-slate-400 dark:text-slate-500 font-mono mt-0.5">Created: {t.dateCreated}</p>
@@ -202,7 +281,7 @@ export default function TripPage() {
                       {t.status}
                     </span>
                   </td>
-                  <td className="p-4 text-right">
+                  <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-2">
                       {t.status === 'Draft' && (
                         <>

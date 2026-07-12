@@ -11,7 +11,7 @@ export const tripsApi = {
       driverId: t.driver_id,
       cargoWeight: t.cargo_weight_kg,
       plannedDistance: t.planned_distance_km,
-      status: t.status.charAt(0).toUpperCase() + t.status.slice(1), // draft -> Draft
+      status: t.status === 'in_progress' ? 'Dispatched' : t.status.charAt(0).toUpperCase() + t.status.slice(1),
       dateCreated: t.created_at?.split('T')[0],
       startOdometerKm: t.start_odometer_km,
       finalOdometerKm: t.final_odometer_km

@@ -52,3 +52,4 @@ yarn-error.log*
 Thumbs.db
 
 node/
+qdrant_storage

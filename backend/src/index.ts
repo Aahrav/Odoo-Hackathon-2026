@@ -34,6 +34,7 @@ import expensesRoutes from './routes/expenses.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import notificationsRoutes from './routes/notifications.routes';
 import auditLogsRoutes from './routes/audit-logs.routes';
+import chatRoutes from './routes/chat.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { startExpiryScanner } from './jobs/expiryScanner';
 
@@ -48,6 +49,7 @@ app.use('/api/v1/expenses', expensesRoutes);
 app.use('/api/v1/reports', dashboardRoutes);
 app.use('/api/v1/notifications', notificationsRoutes);
 app.use('/api/v1/audit-logs', auditLogsRoutes);
+app.use('/api/v1/chat', chatRoutes);
 
 // Global Error Handler (must be after routes)
 app.use(errorHandler);

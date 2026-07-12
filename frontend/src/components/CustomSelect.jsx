@@ -24,11 +24,11 @@ export default function CustomSelect({ value, onChange, options, placeholder, re
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-3 py-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm transition-shadow cursor-pointer text-left"
       >
-        <span className={!selectedOption ? 'text-slate-400' : ''}>
+        <span className={!selectedOption ? 'text-slate-400 dark:text-slate-500' : ''}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <svg
-          className={`w-4 h-4 ml-2 transition-transform duration-200 text-slate-400 ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 ml-2 transition-transform duration-200 text-slate-400 dark:text-slate-500 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -53,9 +53,11 @@ export default function CustomSelect({ value, onChange, options, placeholder, re
           {placeholder && (
             <div
               className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                value === '' ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 font-semibold' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                value === '' ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 font-semibold' : 'text-slate-500 dark:text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
               }`}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 onChange({ target: { value: '' } });
                 setIsOpen(false);
               }}
@@ -71,7 +73,9 @@ export default function CustomSelect({ value, onChange, options, placeholder, re
                   ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 font-semibold'
                   : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
               }`}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 onChange({ target: { value: opt.value } });
                 setIsOpen(false);
               }}

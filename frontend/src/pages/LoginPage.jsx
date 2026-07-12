@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { ROLES, ROLE_DESCRIPTIONS } from '../constants/roles'
 import CustomSelect from '../components/CustomSelect'
@@ -16,6 +16,11 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Fix dark mode bleeding from dashboard
+  useEffect(() => {
+    document.documentElement.classList.remove('dark')
+  }, [])
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target
@@ -144,21 +149,23 @@ export default function LoginPage() {
               />
             </label>
 
-            <label className="block">
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Role (RBAC)
-              </span>
-              <div className="mt-1 z-30">
-                <CustomSelect
-                  value={form.role}
-                  onChange={(e) => handleChange({ target: { name: 'role', value: e.target.value, type: 'text' } })}
-                  options={ROLES.map((role) => ({
-                    value: role,
-                    label: role
-                  }))}
-                />
-              </div>
-            </label>
+            {isRegister && (
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Role (RBAC)
+                </span>
+                <div className="mt-1 z-30">
+                  <CustomSelect
+                    value={form.role}
+                    onChange={(e) => handleChange({ target: { name: 'role', value: e.target.value, type: 'text' } })}
+                    options={ROLES.map((role) => ({
+                      value: role,
+                      label: role
+                    }))}
+                  />
+                </div>
+              </label>
+            )}
 
             {!isRegister && (
               <div className="flex items-center justify-between text-sm">
