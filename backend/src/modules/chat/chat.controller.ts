@@ -5,7 +5,7 @@ import { ChatService } from './chat.service';
 export class ChatController {
   static async sendMessage(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { message } = req.body;
+      const { message, sessionId } = req.body;
       
       if (!message) {
         return res.status(400).json({ success: false, error: { message: 'Message is required' } });
@@ -14,7 +14,7 @@ export class ChatController {
       // Organization ID injected by auth middleware
       const orgId = req.user.organizationId;
       
-      const reply = await ChatService.generateResponse(message, orgId);
+      const reply = await ChatService.generateResponse(message, orgId, sessionId);
       
       res.json({
         success: true,

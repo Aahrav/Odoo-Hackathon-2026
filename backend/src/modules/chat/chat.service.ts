@@ -3,7 +3,7 @@ import { DashboardService } from '../dashboard/dashboard.service';
 export class ChatService {
   private static FASTAPI_URL = 'http://localhost:8000/api/chat';
 
-  static async generateResponse(message: string, organizationId: string): Promise<string> {
+  static async generateResponse(message: string, organizationId: string, sessionId?: string): Promise<string> {
     try {
       // 1. Fetch live operational data from the Node.js DB connection
       const liveData = await DashboardService.getOverview(organizationId).catch(() => ({}));
@@ -16,6 +16,7 @@ export class ChatService {
         },
         body: JSON.stringify({
           message: message,
+          session_id: sessionId,
           live_context: liveData
         })
       });

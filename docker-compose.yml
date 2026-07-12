@@ -8,3 +8,8 @@ services:
       - "6334:6334"
     volumes:
       - ./qdrant_storage:/qdrant/storage
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"

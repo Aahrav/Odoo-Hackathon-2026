@@ -9,6 +9,7 @@ export default function TransitBot() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId] = useState(() => crypto.randomUUID());
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -31,7 +32,7 @@ export default function TransitBot() {
     setIsLoading(true);
 
     try {
-      const data = await chatApi.sendMessage(userMsg);
+      const data = await chatApi.sendMessage(userMsg, sessionId);
       setMessages(prev => [...prev, { role: 'bot', text: data.reply }]);
     } catch (error) {
       setMessages(prev => [...prev, { role: 'bot', text: 'Sorry, I encountered an error. Please try again.' }]);
