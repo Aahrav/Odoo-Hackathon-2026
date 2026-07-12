@@ -15,7 +15,7 @@ function hydrateUser(backendUser) {
   let navigation = [{ path: '/dashboard', label: 'Dashboard' }];
   let displayRole = 'User';
 
-  switch(role) {
+  switch (role) {
     case 'admin':
     case 'fleet_manager':
       displayRole = role === 'admin' ? 'Admin' : 'Fleet Manager';
@@ -43,7 +43,7 @@ function hydrateUser(backendUser) {
       navigation.push(
         { path: '/drivers', label: 'Drivers & Safety' },
         // using drivers page as a placeholder since compliance page doesn't exist in the current routes
-        { path: '/drivers', label: 'Compliance Reports' } 
+        { path: '/drivers', label: 'Compliance Reports' }
       );
       break;
     case 'financial_analyst':
